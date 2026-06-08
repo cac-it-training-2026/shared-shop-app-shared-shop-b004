@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
 import jp.co.sss.shop.annotation.EmailCheck;
 
 /**
@@ -16,64 +15,63 @@ import jp.co.sss.shop.annotation.EmailCheck;
  * 
  *  TIPS 入力チェックアノテーションのmessage属性に"{messages.propertiesで指定した名前}"と記述することができます。
  */
-@EmailCheck
+@EmailCheck(message = "このメールアドレスは既に利用されています")
 public class UserForm implements Serializable {
 	/**
 	 * 会員ID
 	 */
-	private Integer	id;
+	private Integer id;
 
 	/**
 	 * 会員メールアドレス
 	 */
-	@NotBlank
-	@Email
-	private String	email;
+	@NotBlank(message = "メールアドレスは必須項目です")
+	@Email(message = "メールアドレスは正しい形式で入力してください。")
+	private String email;
 
 	/**
 	 * パスワード
 	 */
-	@NotBlank
-	@Size(min = 8, max = 16)
-	@Pattern(regexp = "^[a-zA-Z0-9]+$")
-	private String	password;
+	@NotBlank(message = "パスワードは必須項目です")
+	@Size(min = 8, max = 16, message = "パスワードは8文字以上16文字以内で入力してください。")
+	@Pattern(regexp = "^[a-zA-Z0-9]+$", message = "パスワードは正しい形式で入力してください。")
+	private String password;
 
 	/**
 	 * 会員名
 	 */
-	@NotBlank
+	@NotBlank(message = "氏名は必須項目です。")
 	@Size(min = 1, max = 30, message = "{text.maxsize.message}")
-	private String	name;
+	private String name;
 
 	/**
 	 * 郵便番号
 	 */
-	@NotBlank
+	@NotBlank(message = "郵便番号は必須項目です。")
 	@Size(min = 7, max = 7, message = "{text.fixsize.message}")
 	@Pattern(regexp = "^[0-9]+$", message = "{userRegist.numberpattern.message}")
-	private String	postalCode;
+	private String postalCode;
 
 	/**
 	 * 住所
 	 */
-	@NotBlank
+	@NotBlank(message = "住所は必須項目です。")
 	@Size(min = 1, max = 150, message = "{text.maxsize.message}")
-	private String	address;
+	private String address;
 
 	/**
 	 * 電話番号
 	 */
-	@NotBlank
+	@NotBlank(message = "電話番号は必須項目です。")
 	@Size(min = 10, max = 11)
 	@Pattern(regexp = "^[0-9]+$", message = "{userRegist.numberpattern.message}")
-	private String	phoneNumber;
+	private String phoneNumber;
 
 	/**
 	 * 権限
 	 */
 	private Integer authority;
 
-	
 	/**
 	 * 会員IDの取得
 	 * @return 会員ID
@@ -137,6 +135,7 @@ public class UserForm implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	/**
 	 * 郵便番号の取得
 	 * @return 郵便番号
@@ -200,6 +199,5 @@ public class UserForm implements Serializable {
 	public void setAuthority(Integer authority) {
 		this.authority = authority;
 	}
-
 
 }
