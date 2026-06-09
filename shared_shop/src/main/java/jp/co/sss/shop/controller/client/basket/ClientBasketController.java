@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpSession;
 import jp.co.sss.shop.bean.BasketBean;
+import jp.co.sss.shop.bean.UserBean;
 import jp.co.sss.shop.entity.Item;
 import jp.co.sss.shop.repository.CategoryRepository;
 import jp.co.sss.shop.repository.ItemRepository;
@@ -31,6 +32,12 @@ public class ClientBasketController {
     //セッションから買い物かごを取得。在庫チェックを行い、最後に追加された順で画面に表示。空の場合はメッセージを設定。
     @GetMapping("/client/basket/list")
     public String showBasketList(HttpSession session, Model model) {
+    	
+    	//ログインチェック
+    	UserBean user = (UserBean) session.getAttribute("user");
+		if (user == null) {
+			return "redirect:/login"; 
+		}
 
     	// セッションからカート情報を取得
     	List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
@@ -73,6 +80,12 @@ public class ClientBasketController {
     @PostMapping("/client/basket/add")
     public String addBasket(@RequestParam(name = "id") int itemId, HttpSession session) {
     	
+    	//ログインチェック　
+    	UserBean user = (UserBean) session.getAttribute("user");
+		if (user == null) {
+			return "redirect:/login"; 
+		}
+		
     	// カート情報を取得。なければ新規作成
         List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
         if (basket == null) {
