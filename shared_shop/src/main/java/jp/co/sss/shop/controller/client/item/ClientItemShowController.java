@@ -55,33 +55,35 @@ public class ClientItemShowController {
 	@RequestMapping(path = "/", method = { RequestMethod.GET, RequestMethod.POST })
 	public String index(Model model) {
 
-		/*TODO 現在は全件表示を行っている
-		 * 追加
-		 * 
-		 * これを売れ筋（注文回数が多い順）に改修する*/
-		int sortType = 2;//売れ筋順に初期化
+		// 売れ筋順を初期値にする
+		int sortType = 2;
 
 		// 注文情報DBから売れ筋順の商品一覧を取得
 		List<Item> itemList = orderItemRepository.findBestSellerItems();
 
-		// 売れ筋商品がなかった場合、新着順の商品一覧を取得
+		// 売れ筋商品がない場合
 		if (itemList == null || itemList.isEmpty()) {
 
-			// 新着順の商品一覧を取得
+			// 商品情報DBから新着順の商品一覧を取得
 			itemList = itemRepository.findByDeleteFlagOrderByInsertDateDesc(Constant.NOT_DELETED);
 
-			// 新着順に切り替え
-			sortType = Constant.DEFAULT_SORT_TYPE;
+			// 新着商品がある場合だけ新着順に切り替える
+			if (itemList != null && !itemList.isEmpty()) {
+				sortType = 1;
+			}
 		}
-		// Entityを画面表示用Beanにコピー
+
+		// 最大10件表示
+		if (itemList != null && itemList.size() > 10) {
+			itemList = itemList.subList(0, 10);
+		}
+
 		List<ItemBean> itemBeanList = beanTools.copyEntityListToItemBeanList(itemList);
 
-		// リクエストスコープに設定
-		model.addAttribute("sortType", sortType);
 		model.addAttribute("items", itemBeanList);
+		model.addAttribute("sortType", sortType);
 
-		return "index";//・トップ画面表示
-
+		return "index";
 	}
 
 	/**

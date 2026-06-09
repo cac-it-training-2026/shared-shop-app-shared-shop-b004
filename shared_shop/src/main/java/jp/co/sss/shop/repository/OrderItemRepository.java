@@ -51,5 +51,5 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
 			+ "ORDER BY SUM(oi.quantity) DESC")
 	List<Item> findBestSellerItemsByCategoryId(
 			@Param("categoryId") Integer categoryId);
-
+	
 }
