@@ -5,10 +5,10 @@ import java.sql.Date;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ import jp.co.sss.shop.form.UserForm;
 import jp.co.sss.shop.repository.UserRepository;
 
 @Controller
-@RequestMapping("/client/user/regist")
+//@RequestMapping("/client/user/regist")
 public class ClientUserRegistController {
 
 	private final UserRepository userRepository;
@@ -30,7 +30,8 @@ public class ClientUserRegistController {
 	 * 入力画面表示
 	 * URL：GET /input/init
 	 */
-	@GetMapping("/input/init")
+	//両方受け入れるようにする
+	@RequestMapping(path = "/client/user/regist/input/init", method = { RequestMethod.GET, RequestMethod.POST })
 	public String showUserInput(Model model) {
 
 		// 空のFormを画面に渡す（フォーム入力用）
@@ -44,7 +45,7 @@ public class ClientUserRegistController {
 	 * 確認画面
 	 * URL：POST /check
 	 */
-	@PostMapping("/check")
+	@PostMapping("/client/user/regist/check")
 	public String confirmUser(@Valid @ModelAttribute UserForm form, BindingResult result, Model model,
 			@RequestParam(value = "back", required = false) String back) {
 
@@ -65,7 +66,7 @@ public class ClientUserRegistController {
 	 * 登録処理（完了画面）
 	 * URL：POST /complete
 	 */
-	@PostMapping("/complete")
+	@PostMapping("/client/user/regist/complete")
 	public String completeUserRegistration(@ModelAttribute UserForm form) {
 
 		User user = new User();
