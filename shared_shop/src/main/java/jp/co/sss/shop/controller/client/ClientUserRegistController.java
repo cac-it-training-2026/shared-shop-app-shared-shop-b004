@@ -4,11 +4,14 @@ import java.sql.Date;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import jakarta.validation.Valid;
 import jp.co.sss.shop.entity.User;
 import jp.co.sss.shop.form.UserForm;
 import jp.co.sss.shop.repository.UserRepository;
@@ -42,13 +45,20 @@ public class ClientUserRegistController {
 	 * URL：POST /check
 	 */
 	@PostMapping("/check")
-	public String confirmUser(@ModelAttribute UserForm form, Model model) {
+	public String confirmUser(@Valid @ModelAttribute UserForm form, BindingResult result, Model model,
+			@RequestParam(value = "back", required = false) String back) {
+
+		//入力チェック
+		if (result.hasErrors()) {
+			return "client/user/regist_input";
+		}
 
 		// 受け取った入力値をそのまま確認画面に渡す
 		model.addAttribute("userForm", form);
 
-		// confirm.htmlを表示
+		// 確認画面を表示
 		return "client/user/regist_check";
+
 	}
 
 	/**
