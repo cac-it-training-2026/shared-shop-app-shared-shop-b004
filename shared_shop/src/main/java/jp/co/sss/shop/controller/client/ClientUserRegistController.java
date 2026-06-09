@@ -14,7 +14,7 @@ import jp.co.sss.shop.form.UserForm;
 import jp.co.sss.shop.repository.UserRepository;
 
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/client/user/regist")
 public class ClientUserRegistController {
 
 	private final UserRepository userRepository;
@@ -25,35 +25,35 @@ public class ClientUserRegistController {
 
 	/**
 	 * 入力画面表示
-	 * URL：GET /user/input
+	 * URL：GET /input/init
 	 */
-	@GetMapping("/input")
+	@GetMapping("/input/init")
 	public String showUserInput(Model model) {
 
 		// 空のFormを画面に渡す（フォーム入力用）
 		model.addAttribute("userForm", new UserForm());
 
 		// input.htmlを表示
-		return "input";
+		return "client/user/regist_input";
 	}
 
 	/**
 	 * 確認画面
-	 * URL：POST /user/confirm
+	 * URL：POST /check
 	 */
-	@PostMapping("/confirm")
+	@PostMapping("/check")
 	public String confirmUser(@ModelAttribute UserForm form, Model model) {
 
 		// 受け取った入力値をそのまま確認画面に渡す
 		model.addAttribute("userForm", form);
 
 		// confirm.htmlを表示
-		return "confirm";
+		return "client/user/regist_check";
 	}
 
 	/**
 	 * 登録処理（完了画面）
-	 * URL：POST /user/complete
+	 * URL：POST /complete
 	 */
 	@PostMapping("/complete")
 	public String completeUserRegistration(@ModelAttribute UserForm form) {
@@ -68,7 +68,7 @@ public class ClientUserRegistController {
 		user.setAddress(form.getAddress());
 		user.setPhoneNumber(form.getPhoneNumber());
 
-		user.setAuthority(1); // 権限（一般ユーザー）
+		user.setAuthority(2); // 権限（一般ユーザーは2）
 		user.setDeleteFlag(0); // 削除フラグ（0 = 未削除）
 		user.setInsertDate(new Date(System.currentTimeMillis())); // 登録日時
 
@@ -76,7 +76,7 @@ public class ClientUserRegistController {
 		userRepository.save(user);
 
 		// 完了画面へ
-		return "complete";
+		return "client/user/regist_complete";
 	}
 
 }
