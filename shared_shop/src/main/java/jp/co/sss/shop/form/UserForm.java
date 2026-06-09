@@ -41,30 +41,31 @@ public class UserForm implements Serializable {
 	 * 会員名
 	 */
 	@NotBlank(message = "氏名は必須項目です。")
-	@Size(min = 1, max = 30, message = "{text.maxsize.message}")
+	@Size(min = 1, max = 30, message = "{氏名は 30文字以内で入力してください。}")
 	private String name;
 
 	/**
 	 * 郵便番号
 	 */
 	@NotBlank(message = "郵便番号は必須項目です。")
-	@Size(min = 7, max = 7, message = "{text.fixsize.message}")
-	@Pattern(regexp = "^[0-9]+$", message = "{userRegist.numberpattern.message}")
+	@Size(min = 7, max = 7, message = "{郵便番号は7文字で入力してください。}")
+	@Pattern(regexp = "^[0-9]+$", message = "{郵便番号は半角数字のみで入力してください。"
+			+ "}")
 	private String postalCode;
 
 	/**
 	 * 住所
 	 */
 	@NotBlank(message = "住所は必須項目です。")
-	@Size(min = 1, max = 150, message = "{text.maxsize.message}")
+	@Size(min = 1, max = 150, message = "{住所は150文字以内で入力してください。}")
 	private String address;
 
 	/**
 	 * 電話番号
 	 */
 	@NotBlank(message = "電話番号は必須項目です。")
-	@Size(min = 10, max = 11)
-	@Pattern(regexp = "^[0-9]+$", message = "{userRegist.numberpattern.message}")
+	@Size(min = 10, max = 11, message = "電話番号は半角数字のみで入力してください。")
+	@Pattern(regexp = "^[0-9]+$", message = "電話番号は 10文字以上11文字以内で入力してください。")
 	private String phoneNumber;
 
 	/**
