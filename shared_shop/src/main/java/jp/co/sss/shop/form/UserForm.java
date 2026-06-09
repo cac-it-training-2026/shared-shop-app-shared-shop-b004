@@ -15,7 +15,7 @@ import jp.co.sss.shop.annotation.EmailCheck;
  * 
  *  TIPS 入力チェックアノテーションのmessage属性に"{messages.propertiesで指定した名前}"と記述することができます。
  */
-@EmailCheck(message = "このメールアドレスは既に利用されています")
+@EmailCheck(message = "このメールアドレスは既に利用されています。")
 public class UserForm implements Serializable {
 	/**
 	 * 会員ID
@@ -25,14 +25,14 @@ public class UserForm implements Serializable {
 	/**
 	 * 会員メールアドレス
 	 */
-	@NotBlank(message = "メールアドレスは必須項目です")
+	@NotBlank(message = "メールアドレスは必須項目です。")
 	@Email(message = "メールアドレスは正しい形式で入力してください。")
 	private String email;
 
 	/**
 	 * パスワード
 	 */
-	@NotBlank(message = "パスワードは必須項目です")
+	@NotBlank(message = "パスワードは必須項目です。")
 	@Size(min = 8, max = 16, message = "パスワードは8文字以上16文字以内で入力してください。")
 	@Pattern(regexp = "^[a-zA-Z0-9]+$", message = "パスワードは正しい形式で入力してください。")
 	private String password;
@@ -41,23 +41,22 @@ public class UserForm implements Serializable {
 	 * 会員名
 	 */
 	@NotBlank(message = "氏名は必須項目です。")
-	@Size(min = 1, max = 30, message = "{氏名は 30文字以内で入力してください。}")
+	@Size(min = 1, max = 30, message = "{氏名は30文字以内で入力してください。}")
 	private String name;
 
 	/**
 	 * 郵便番号
 	 */
 	@NotBlank(message = "郵便番号は必須項目です。")
-	@Size(min = 7, max = 7, message = "{郵便番号は7文字で入力してください。}")
-	@Pattern(regexp = "^[0-9]+$", message = "{郵便番号は半角数字のみで入力してください。"
-			+ "}")
+	@Size(min = 7, max = 7, message = "郵便番号は7文字で入力してください。")
+	@Pattern(regexp = "^[0-9]+$", message = "郵便番号は半角数字のみで入力してください。")
 	private String postalCode;
 
 	/**
 	 * 住所
 	 */
 	@NotBlank(message = "住所は必須項目です。")
-	@Size(min = 1, max = 150, message = "{住所は150文字以内で入力してください。}")
+	@Size(min = 1, max = 150, message = "住所は150文字以内で入力してください。")
 	private String address;
 
 	/**
