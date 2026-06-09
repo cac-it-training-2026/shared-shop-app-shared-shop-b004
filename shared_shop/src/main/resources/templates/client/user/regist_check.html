@@ -57,15 +57,9 @@
     <input type="hidden" name="phoneNumber" th:value="${userForm.phoneNumber}">
 
     <input type="submit" value="登録" class="send_button">
-</form>
-
-
-
-
-		
-		
-		<form th:action="@{/client/user/regist/input}" method="post" class="update">
-			<input type="submit" value="戻る" class="back_button" />
+</form>		
+		<form th:action="@{/client/user/regist/input/init}" method="post" class="update">
+			<input type="submit"value="戻る" class="back_button" />
 		</form>
 	</div>
 </body>

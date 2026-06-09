@@ -41,7 +41,7 @@ public class UserForm implements Serializable {
 	 * 会員名
 	 */
 	@NotBlank(message = "氏名は必須項目です。")
-	@Size(min = 1, max = 30, message = "{氏名は30文字以内で入力してください。}")
+	@Size(min = 1, max = 30, message = "氏名は30文字以内で入力してください。")
 	private String name;
 
 	/**
@@ -63,8 +63,8 @@ public class UserForm implements Serializable {
 	 * 電話番号
 	 */
 	@NotBlank(message = "電話番号は必須項目です。")
-	@Size(min = 10, max = 11, message = "電話番号は半角数字のみで入力してください。")
-	@Pattern(regexp = "^[0-9]+$", message = "電話番号は 10文字以上11文字以内で入力してください。")
+	@Size(min = 10, max = 11, message = "電話番号は 10文字以上11文字以内で入力してください。")
+	@Pattern(regexp = "^[0-9]+$", message = "電話番号は半角数字のみで入力してください。")
 	private String phoneNumber;
 
 	/**
