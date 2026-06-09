@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -170,5 +171,23 @@ public class ClientOrderRegistController {
 
         return "client/order/check";
     }
+    
+
+
+
+    //　注文完成画面
+    @GetMapping("/client/order/complete")
+    public String showOrderCompletePage(HttpSession session, Model model) {
+        
+        UserBean user = (UserBean) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("categoryList", categoryRepository.findAll());
+
+        return "client/order/complete";
+    }
+
 
 }
