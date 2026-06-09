@@ -21,20 +21,22 @@ public class ClientUserDeleteController {
 
 		UserBean loginUser = (UserBean) session.getAttribute("user");
 
-		UserBean userBean = new UserBean();
-		BeanUtils.copyProperties(loginUser, userBean);
+		UserBean userForm = new UserBean();
+		BeanUtils.copyProperties(loginUser, userForm);
 
-		session.setAttribute("userBean", userBean);
+		session.setAttribute("userForm", userForm);
 
 		return "redirect:/client/user/delete/check";
 	}
 
 	@RequestMapping(path = "/client/user/delete/check", method = RequestMethod.GET)
 	public String userCheck2(Model model) {
-		UserBean userBean = (UserBean) session.getAttribute("userBean");
-		model.addAttribute("userBean", userBean);
 
-		// 退会確認画面表示
+		UserBean userForm = (UserBean) session.getAttribute("userForm");
+
+		model.addAttribute("userForm", userForm);
+
 		return "client/user/delete_check";
+
 	}
 }
