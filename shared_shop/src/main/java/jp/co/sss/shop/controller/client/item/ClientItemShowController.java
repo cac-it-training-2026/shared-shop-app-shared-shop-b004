@@ -92,7 +92,7 @@ public class ClientItemShowController {
 	 * @param model Viewとの値受渡し
 	 * @return "client/item/list" 商品一覧画面
 	 */
-	@RequestMapping(path = "/client/item/list/{sortType}", method = RequestMethod.GET)
+	@RequestMapping(path = "/client/item/list/{sortType}", method = { RequestMethod.GET, RequestMethod.POST })
 	public String showItemList(
 			@PathVariable int sortType,
 			@RequestParam(required = false) Integer categoryId,
