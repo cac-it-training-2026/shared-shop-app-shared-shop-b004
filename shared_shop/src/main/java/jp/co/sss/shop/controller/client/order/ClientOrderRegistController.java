@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -92,7 +93,7 @@ public class ClientOrderRegistController {
         orderForm.setPhoneNumber(phoneNumber);
 
         // 住所が未入力、または空白のみの場合
-        if (address == null || address.trim().isEmpty()) {
+        if (!StringUtils.hasText(address)) {
             model.addAttribute("orderForm", orderForm);
             model.addAttribute("categoryList", categoryRepository.findAll());
             return "client/order/address_input"; 
