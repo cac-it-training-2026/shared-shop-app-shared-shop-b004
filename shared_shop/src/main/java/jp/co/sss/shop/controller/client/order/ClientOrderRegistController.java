@@ -16,6 +16,7 @@ import jp.co.sss.shop.bean.OrderBean;
 import jp.co.sss.shop.bean.OrderItemBean;
 import jp.co.sss.shop.bean.UserBean;
 import jp.co.sss.shop.entity.Item;
+import jp.co.sss.shop.entity.Order;
 import jp.co.sss.shop.entity.User;
 import jp.co.sss.shop.repository.CategoryRepository;
 import jp.co.sss.shop.repository.ItemRepository;
@@ -172,8 +173,46 @@ public class ClientOrderRegistController {
         return "client/order/check";
     }
     
+    // 注文情報と注文商品情報をデータベースに登録。商品の在庫数を減らし、買い物かごを空にする。
+    @PostMapping("/client/order/complete")
+    public String registerOrder(HttpSession session) {
 
+        UserBean user = (UserBean) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
 
+        OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
+        List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
+
+        if (orderForm != null && basket != null && !basket.isEmpty()) {
+            
+            for (BasketBean bean : basket) {
+                Item dbItem = itemRepository.findByIdAndDeleteFlag(bean.getId(), 0);
+                if (dbItem != null) {
+                    dbItem.setStock(dbItem.getStock() - bean.getOrderNum());
+                    itemRepository.save(dbItem); 
+                }
+            }
+
+            Order newOrder = new Order();
+            newOrder.setPostalCode(orderForm.getPostalCode());
+            newOrder.setAddress(orderForm.getAddress());
+            newOrder.setName(orderForm.getName());
+            newOrder.setPhoneNumber(orderForm.getPhoneNumber());
+            newOrder.setPayMethod(orderForm.getPayMethod());
+            
+            User dbUser = userRepository.findByIdAndDeleteFlag(user.getId(), 0);
+            newOrder.setUser(dbUser);
+            
+            orderRepository.save(newOrder);
+
+            session.removeAttribute("basketBeans");
+            session.removeAttribute("orderForm");
+        }
+
+        return "redirect:/client/order/complete";
+    }
 
     //　注文完成画面
     @GetMapping("/client/order/complete")
