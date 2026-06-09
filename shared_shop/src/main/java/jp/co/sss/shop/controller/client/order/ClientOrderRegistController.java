@@ -1,5 +1,8 @@
 package jp.co.sss.shop.controller.client.order;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -7,8 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpSession;
+import jp.co.sss.shop.bean.BasketBean;
 import jp.co.sss.shop.bean.OrderBean;
+import jp.co.sss.shop.bean.OrderItemBean;
 import jp.co.sss.shop.bean.UserBean;
+import jp.co.sss.shop.entity.Item;
 import jp.co.sss.shop.entity.User;
 import jp.co.sss.shop.repository.CategoryRepository;
 import jp.co.sss.shop.repository.ItemRepository;
@@ -99,6 +105,70 @@ public class ClientOrderRegistController {
         model.addAttribute("categoryList", categoryRepository.findAll());
 
         return "client/order/payment_input";
+    }
+    
+    // 選択された支払い方法を保存。最新の在庫状況から小計・合計金額を算出し、注文確認画面を表示。
+    @PostMapping("/client/order/check")
+    public String showOrderConfirm(@RequestParam(name = "payMethod") int payMethod, HttpSession session, Model model) {
+
+        UserBean user = (UserBean) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
+        if (orderForm != null) {
+            orderForm.setPayMethod(payMethod);
+        }
+
+        List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
+        
+        List<OrderItemBean> orderItemBeans = new ArrayList<>();
+        int subtotal = 0;
+
+        if (basket != null && !basket.isEmpty()) {
+            for (int i = 0; i < basket.size(); i++) {
+                BasketBean currentBean = basket.get(i);
+                
+                Item dbItem = itemRepository.findByIdAndDeleteFlag(currentBean.getId(), 0);
+                
+                if (dbItem == null || dbItem.getStock() == 0) {
+                    basket.remove(i);
+                    i--;
+                    model.addAttribute("message", currentBean.getName() + "ただ今売れ切りました。");
+                } else {
+                	
+                    OrderItemBean orderItem = new OrderItemBean();
+                    
+                    orderItem.setId(dbItem.getId());           
+                    orderItem.setName(dbItem.getName());       
+                    orderItem.setPrice(dbItem.getPrice());     
+                    orderItem.setImage(dbItem.getImage());     
+                    orderItem.setOrderNum(currentBean.getOrderNum()); 
+                    
+                    int itemSubtotal = dbItem.getPrice() * currentBean.getOrderNum();
+                    orderItem.setSubtotal(itemSubtotal);
+                    
+                    orderItemBeans.add(orderItem);
+                    
+                    subtotal += itemSubtotal;
+                }
+            }
+            session.setAttribute("basketBeans", basket);
+        }
+
+        if (orderForm != null) {
+            orderForm.setTotal(subtotal);
+            session.setAttribute("orderForm", orderForm);
+        }
+
+        model.addAttribute("orderItemBeans", orderItemBeans); 
+        model.addAttribute("total", subtotal);               
+        model.addAttribute("subtotal", subtotal);            
+        model.addAttribute("categoryList", categoryRepository.findAll());
+        model.addAttribute("orderForm", orderForm);
+
+        return "client/order/check";
     }
 
 }
