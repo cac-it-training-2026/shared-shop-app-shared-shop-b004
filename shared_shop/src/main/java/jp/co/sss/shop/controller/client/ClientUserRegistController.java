@@ -9,15 +9,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jp.co.sss.shop.entity.User;
 import jp.co.sss.shop.form.UserForm;
 import jp.co.sss.shop.repository.UserRepository;
 
 @Controller
-@RequestMapping("/client/user/regist")
+//@RequestMapping("/client/user/regist")
 public class ClientUserRegistController {
 
 	private final UserRepository userRepository;
@@ -27,10 +28,21 @@ public class ClientUserRegistController {
 	}
 
 	/**
-	 * 入力画面表示
-	 * URL：GET /input/init
+	 * 入力画面遷移→inputへ
+	 * URL：/client/user/regist/input/init
 	 */
-	@GetMapping("/input/init")
+	@RequestMapping("/client/user/regist/input/init")
+	public String showUserInputInit(Model model) {
+
+		// input.htmlを表示
+		return "redirect:/client/user/regist/input";
+	}
+
+	/**
+	 * 入力画面表示(GET/POST)
+	 * URL： /input
+	 */
+	@RequestMapping(path = "/client/user/regist/input", method = { RequestMethod.GET, RequestMethod.POST })
 	public String showUserInput(Model model) {
 
 		// 空のFormを画面に渡す（フォーム入力用）
@@ -41,17 +53,19 @@ public class ClientUserRegistController {
 	}
 
 	/**
-	 * 確認画面
-	 * URL：POST /check
+	 * 確認画面(POST)
+	 * URL： /check
 	 */
-	@PostMapping("/check")
+	@PostMapping("/client/user/regist/check")
 	public String confirmUser(@Valid @ModelAttribute UserForm form, BindingResult result, Model model,
-			@RequestParam(value = "back", required = false) String back) {
+			HttpSession session) {
 
 		//入力チェック
 		if (result.hasErrors()) {
 			return "client/user/regist_input";
 		}
+		// セッション保存
+		session.setAttribute("userForm", form);
 
 		// 受け取った入力値をそのまま確認画面に渡す
 		model.addAttribute("userForm", form);
@@ -62,11 +76,19 @@ public class ClientUserRegistController {
 	}
 
 	/**
-	 * 登録処理（完了画面）
-	 * URL：POST /complete
+	 * 登録処理（POST）
+	 * URL： /complete
 	 */
-	@PostMapping("/complete")
-	public String completeUserRegistration(@ModelAttribute UserForm form) {
+	@PostMapping("/client/user/regist/complete")
+	public String completeUserRegistration(HttpSession session) {
+
+		// セッションから取得
+		UserForm form = (UserForm) session.getAttribute("userForm");
+
+		//直接アクセス対策
+		if (form == null) {
+			return "redirect:/client/user/regist/input";
+		}
 
 		User user = new User();
 
@@ -85,7 +107,20 @@ public class ClientUserRegistController {
 		// DBに保存
 		userRepository.save(user);
 
+		// セッション削除
+		session.removeAttribute("userForm");
+
 		// 完了画面へ
+		return "redirect:/client/user/regist/complete";
+	}
+
+	/**
+	 * 完了画面表示（GET）
+	 * URL：/client/user/regist/complete
+	 */
+
+	@GetMapping("/client/user/regist/complete")
+	public String showCompletePage() {
 		return "client/user/regist_complete";
 	}
 
