@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -92,7 +93,7 @@ public class ClientOrderRegistController {
         orderForm.setPhoneNumber(phoneNumber);
 
         // 住所が未入力、または空白のみの場合
-        if (address == null || address.trim().isEmpty()) {
+        if (!StringUtils.hasText(address)) {
             model.addAttribute("orderForm", orderForm);
             model.addAttribute("categoryList", categoryRepository.findAll());
             return "client/order/address_input"; 
@@ -226,6 +227,45 @@ public class ClientOrderRegistController {
         model.addAttribute("categoryList", categoryRepository.findAll());
 
         return "client/order/complete";
+    }
+    
+    @GetMapping("/client/order/address/input")
+    public String showAddressFormByGet(HttpSession session, Model model) {
+    	
+        UserBean user = (UserBean) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
+
+        if (orderForm == null) {
+            orderForm = new OrderBean();
+            User dbUser = userRepository.findByIdAndDeleteFlag(user.getId(), 0); 
+            if (dbUser != null) {
+                orderForm.setPostalCode(dbUser.getPostalCode());
+                orderForm.setAddress(dbUser.getAddress());
+                orderForm.setName(dbUser.getName());
+                orderForm.setPhoneNumber(dbUser.getPhoneNumber()); 
+            }
+        }
+
+        model.addAttribute("orderForm", orderForm);
+        model.addAttribute("categoryList", categoryRepository.findAll());
+
+        return "client/order/address_input";
+    }
+
+    @PostMapping("/client/basket/list")
+    public String handleBasketListBack() {
+    	
+        return "redirect:/client/basket/list";
+    }
+
+    @PostMapping("/client/order/payment/back")
+    public String handlePaymentBackToAddressInput() {
+
+        return "redirect:/client/order/address/input";
     }
 
 
