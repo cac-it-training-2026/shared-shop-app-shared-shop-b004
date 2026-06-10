@@ -56,7 +56,7 @@ public class ClientItemShowController {
 	public String index(Model model) {
 
 		// 売れ筋順を初期値にする
-		int sortType = 2;
+		//		int sortType = 2;
 
 		// 注文情報DBから売れ筋順の商品一覧を取得
 		List<Item> itemList = orderItemRepository.findBestSellerItems();
@@ -67,21 +67,21 @@ public class ClientItemShowController {
 			// 商品情報DBから新着順の商品一覧を取得
 			itemList = itemRepository.findByDeleteFlagOrderByInsertDateDesc(Constant.NOT_DELETED);
 
-			// 新着商品がある場合だけ新着順に切り替える
-			if (itemList != null && !itemList.isEmpty()) {
-				sortType = 1;
-			}
+			//			// 新着商品がある場合だけ新着順に切り替える
+			//			if (itemList != null && !itemList.isEmpty()) {
+			//				sortType = 1;
+			//			}
 		}
 
-		// 最大10件表示
-		if (itemList != null && itemList.size() > 10) {
-			itemList = itemList.subList(0, 10);
-		}
+		//		// 最大10件表示
+		//		if (itemList != null && itemList.size() > 10) {
+		//			itemList = itemList.subList(0, 10);
+		//		}
 
 		List<ItemBean> itemBeanList = beanTools.copyEntityListToItemBeanList(itemList);
 
 		model.addAttribute("items", itemBeanList);
-		model.addAttribute("sortType", sortType);
+		//		model.addAttribute("sortType", sortType);
 
 		return "index";
 	}
@@ -100,6 +100,10 @@ public class ClientItemShowController {
 			@RequestParam(required = false) Integer categoryId,
 			Model model) {
 
+		if (categoryId != null && categoryId == 0) {
+			categoryId = null;
+		}
+
 		// 商品一覧格納用
 		List<Item> itemList;
 
@@ -116,8 +120,7 @@ public class ClientItemShowController {
 			} else {
 
 				// 商品情報を売れ筋順で取得
-				itemList = itemRepository.findByDeleteFlagOrderByBestSeller(
-						Constant.NOT_DELETED);
+				itemList = itemRepository.findByDeleteFlagOrderByBestSeller();
 			}
 
 		} else {
@@ -135,9 +138,7 @@ public class ClientItemShowController {
 
 				// 指定カテゴリの商品情報を売れ筋順で取得
 				itemList = itemRepository
-						.findByDeleteFlagAndCategoryIdOrderByBestSeller(
-								Constant.NOT_DELETED,
-								categoryId);
+						.findByDeleteFlagAndCategoryIdOrderByBestSeller(categoryId);
 			}
 		}
 
@@ -151,7 +152,6 @@ public class ClientItemShowController {
 		model.addAttribute("sortType", sortType);
 
 		// カテゴリIDをViewへ渡す
-		model.addAttribute("categoryId", categoryId);
 
 		return "client/item/list";
 	}

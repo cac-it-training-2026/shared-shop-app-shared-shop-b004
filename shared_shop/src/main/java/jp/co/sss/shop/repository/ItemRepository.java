@@ -78,14 +78,27 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 	 *
 	 * @param deleteFlag 削除フラグ
 	 * @return 売れ筋順の商品一覧
-	 */
-	@Query("SELECT i FROM Item i "
-			+ "LEFT JOIN i.orderItemList oi "
-			+ "WHERE i.deleteFlag = :deleteFlag "
-			+ "GROUP BY i "
-			+ "ORDER BY COALESCE(SUM(oi.quantity), 0) DESC, i.insertDate DESC, i.id DESC")
-	List<Item> findByDeleteFlagOrderByBestSeller(
-			@Param("deleteFlag") int deleteFlag);
+	//	 */
+	//	@Query("SELECT i FROM Item i "
+	//			+ "LEFT JOIN i.orderItemList oi "
+	//			+ "WHERE i.deleteFlag = 0"
+	//			+ "GROUP BY i "
+	//			+ "ORDER BY COALESCE(SUM(oi.quantity), 0) DESC, i.insertDate DESC, i.id DESC")
+	@Query("""
+			select i
+			from Item i
+			where i.deleteFlag = 0
+			and exists (
+			select oi
+			from OrderItem oi
+			where oi.item = i)
+			order by (
+			select count(oi)
+			from OrderItem oi
+			where oi.item = i
+			) desc, i.id asc
+			""")
+	List<Item> findByDeleteFlagOrderByBestSeller();
 
 	/**
 	 * カテゴリIDと削除フラグを条件に商品情報を売れ筋順で取得
@@ -97,13 +110,22 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 	 * @param categoryId カテゴリID
 	 * @return カテゴリ別・売れ筋順の商品一覧
 	 */
-	@Query("SELECT i FROM Item i "
-			+ "LEFT JOIN i.orderItemList oi "
-			+ "WHERE i.deleteFlag = :deleteFlag "
-			+ "AND i.category.id = :categoryId "
-			+ "GROUP BY i "
-			+ "ORDER BY COALESCE(SUM(oi.quantity), 0) DESC, i.insertDate DESC, i.id DESC")
+	@Query("""
+			select i
+			from Item i
+			where i.deleteFlag = 0
+			and i.category.id = :categoryId
+			and exists (
+			select oi
+			from OrderItem oi
+			where oi.item = i)
+			order by (
+			select count(oi)
+			from OrderItem oi
+			where oi.item = i
+			) desc, i.id asc
+			""")
 	List<Item> findByDeleteFlagAndCategoryIdOrderByBestSeller(
-			@Param("deleteFlag") int deleteFlag,
+
 			@Param("categoryId") Integer categoryId);
 }
