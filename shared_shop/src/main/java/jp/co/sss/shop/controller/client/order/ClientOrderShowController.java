@@ -32,13 +32,16 @@ public class ClientOrderShowController {
 	@Autowired
 	BeanTools beanTools;
 
+	/*
+	 * ユーザーの注文情報一覧を表示
+	 */
 	@RequestMapping(path = "/client/order/list", method = { RequestMethod.GET, RequestMethod.POST })
 	public String showOrderList(HttpSession session, Model model) {
+		//セッションに登録されたユーザー情報取得
 		UserBean user = (UserBean) session.getAttribute("user");
-
-		System.out.println(user);
-		System.out.println(user.getId());
+		//ユーザーの注文情報を取得
 		List<Order> orderList = repository.findByUserIdOrderByInsertDateDesc(user.getId());
+		//OrderBeanクラスの配列を作成
 		List<OrderBean> orderBeanList = new ArrayList<OrderBean>();
 		for (Order order : orderList) {
 			// BeanToolsクラスのcopyEntityToOrderBeanメソッドを使用して表示する注文情報を生成
@@ -50,7 +53,7 @@ public class ClientOrderShowController {
 
 			//合計金額のセット
 			orderBean.setTotal(total);
-
+			//リストに登録
 			orderBeanList.add(orderBean);
 		}
 
@@ -59,6 +62,9 @@ public class ClientOrderShowController {
 		return "client/order/list";
 	}
 
+	/*
+	 * 注文情報の詳細表示
+	 */
 	@GetMapping("/client/order/detail/{id}")
 	public String showOrder(@PathVariable Integer id, Model model) {
 		Order order = repository.findById(id).orElseThrow();
