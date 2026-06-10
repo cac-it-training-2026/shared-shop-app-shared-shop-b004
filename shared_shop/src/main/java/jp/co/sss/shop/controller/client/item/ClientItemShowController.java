@@ -116,7 +116,6 @@ public class ClientItemShowController {
 			} else {
 
 				// 商品情報を売れ筋順で取得
-				// 商品情報を売れ筋順で取得
 				itemList = itemRepository.findByDeleteFlagOrderByBestSeller(
 						Constant.NOT_DELETED);
 			}
