@@ -6,12 +6,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import jp.co.sss.shop.bean.BasketBean;
 import jp.co.sss.shop.bean.OrderBean;
 import jp.co.sss.shop.bean.OrderItemBean;
@@ -73,28 +75,19 @@ public class ClientOrderRegistController {
     //入力された届け先住所の形式チェックを行い、成功時はセッションに保存して支払い方法入力画面を表示。
     @PostMapping("/client/order/payment/input")
     public String showPaymentForm(
-            @RequestParam(name = "postalCode") String postalCode,
-            @RequestParam(name = "address") String address,
-            @RequestParam(name = "name") String name,
-            @RequestParam(name = "phoneNumber") String phoneNumber,
+            @ModelAttribute("orderForm") @Valid OrderBean orderForm, // 接收并使用JSR303标准校验
+            BindingResult result,                                    // 捕获校验结果
             HttpSession session, Model model) {
 
-        // ログインチェック
+    	// ログインチェック
         UserBean user = (UserBean) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
-        // 注文フォームを新規生成
-        OrderBean orderForm = new OrderBean();
-        orderForm.setPostalCode(postalCode);
-        orderForm.setAddress(address);
-        orderForm.setName(name);
-        orderForm.setPhoneNumber(phoneNumber);
-
-        // 住所が未入力、または空白のみの場合
-        if (!StringUtils.hasText(address)) {
-            model.addAttribute("orderForm", orderForm);
+        // 入力値をチェックする
+        if (result.hasErrors()) {
+            // 入力誤りなし：5-3-2-2へ遷移 入力誤りあり：5-3-1-2へ遷移
             model.addAttribute("categoryList", categoryRepository.findAll());
             return "client/order/address_input"; 
         }
@@ -103,6 +96,7 @@ public class ClientOrderRegistController {
         if (user != null) {
             orderForm.setUserName(user.getName());
         }
+        
         session.setAttribute("orderForm", orderForm);
         model.addAttribute("payMethod", orderForm.getPayMethod());
         model.addAttribute("categoryList", categoryRepository.findAll());

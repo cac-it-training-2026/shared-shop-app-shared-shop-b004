@@ -1,6 +1,7 @@
 package jp.co.sss.shop.controller.client.basket;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,31 +44,41 @@ public class ClientBasketController {
     	List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
         
      // カートが空の場合、新規作成してセッションに保存
-        if (basket == null) {
-            basket = new ArrayList<BasketBean>();
-            session.setAttribute("basketBeans", basket);
-        }
+    	if (basket == null || basket.isEmpty()) {
+            session.removeAttribute("basketBeans");
+        } else {
+            // 商品の在庫チェック
+            List<String> itemNameListZero = new ArrayList<>();
+            List<String> itemNameListLessThan = new ArrayList<>();
 
-     // 商品の在庫チェック
-        if (basket != null && !basket.isEmpty()) {
-            
-            for (int i = 0; i < basket.size(); i++) {
-                
-                BasketBean currentBean = basket.get(i);
-                
-             // 最新の在庫情報をデータベースから取得
-                Item dbItem = itemRepository.findById(currentBean.getId()).get();
-                
-             // 在庫切れの場合、カートから削除してメッセージを設定
-                if (dbItem.getStock() == 0) {
-                    basket.remove(i);
-                    i--; // インデックスを調整
+            for (BasketBean currentBean : basket) {
+                // 最新の在庫情報をデータベースから取得
+                Item dbItem = itemRepository.findById(currentBean.getId()).orElse(null);
+                if (dbItem != null) {
+                	
+                    //最新在庫をBeanに保存
+                	currentBean.setStock(dbItem.getStock());
 
-                    model.addAttribute("message", currentBean.getName() + "ただ今売れ切りました。");
-                } 
+                    // チェック：在庫数切れの場合
+                    if (dbItem.getStock() == 0) {
+                        itemNameListZero.add(currentBean.getName());
+                    } 
+                    //チェック：在庫数＜買い物かごの個数となる場合
+                    else if (dbItem.getStock() < currentBean.getOrderNum()) {
+                        itemNameListLessThan.add(currentBean.getName());
+                    }
+                }
+            }
+
+            // Listでエラーがある場合のみ${itemNameListLessThan != null} をtureにする
+            if (!itemNameListZero.isEmpty()) {
+                model.addAttribute("itemNameListZero", itemNameListZero);
+            }
+            if (!itemNameListLessThan.isEmpty()) {
+                model.addAttribute("itemNameListLessThan", itemNameListLessThan);
             }
             
-         // 更新されたカート情報をセッションに保存
+            // 更新されたカート情報をセッションに保存
             session.setAttribute("basketBeans", basket);
         }
      // 画面表示用のカテゴリリストを取得
@@ -132,16 +143,22 @@ public class ClientBasketController {
         List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
         
         if (basket != null) {
-
-        	// 対象の商品をループで探す
-        	for (BasketBean bean : basket) {
+            Iterator<BasketBean> iterator = basket.iterator();
+            
+            // 対象の商品をループで探す
+            while (iterator.hasNext()) {
+                BasketBean bean = iterator.next();
                 if (bean.getId().equals(itemId)) {
-                	// 一致する商品をカートから削除
-                	basket.remove(bean); 
+                    // 数が2以上のとき：該当商品の数を減らす
+                    if (bean.getOrderNum() >= 2) {
+                        bean.setOrderNum(bean.getOrderNum() - 1);
+                    } else {
+                        iterator.remove(); // 数が1のとき:買い物かごから該当商品を削除
+                    }
                     break;              
                 }
             }
-        	// セッションを更新
+            // セッションを更新
             session.setAttribute("basketBeans", basket);
         }
 
