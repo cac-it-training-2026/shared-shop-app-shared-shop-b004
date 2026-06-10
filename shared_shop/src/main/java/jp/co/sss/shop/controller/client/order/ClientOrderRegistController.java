@@ -75,8 +75,8 @@ public class ClientOrderRegistController {
     //入力された届け先住所の形式チェックを行い、成功時はセッションに保存して支払い方法入力画面を表示。
     @PostMapping("/client/order/payment/input")
     public String showPaymentForm(
-            @ModelAttribute("orderForm") @Valid OrderBean orderForm, // 接收并使用JSR303标准校验
-            BindingResult result,                                    // 捕获校验结果
+            @ModelAttribute("orderForm") @Valid OrderBean orderForm,
+            BindingResult result,                                    
             HttpSession session, Model model) {
 
     	// ログインチェック
@@ -95,6 +95,11 @@ public class ClientOrderRegistController {
         // 正常系ルート
         if (user != null) {
             orderForm.setUserName(user.getName());
+        }
+        
+        // 初期値としてクレジットカード(1)を設定する
+        if (orderForm.getPayMethod() == null || orderForm.getPayMethod() == 0) {
+            orderForm.setPayMethod(1); // 1 = クレジットカード
         }
         
         session.setAttribute("orderForm", orderForm);
@@ -116,24 +121,18 @@ public class ClientOrderRegistController {
             return "redirect:/login";
         }
         
-        // 支払方法選択チェック
+        OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
+        
+        // 支払方法がnullの場合強制的にクレジットカードに設定
         if (payMethod == null) {
-        	
-            OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
-            
-            model.addAttribute("orderForm", orderForm);
-            if (orderForm != null) {
-                model.addAttribute("payMethod", orderForm.getPayMethod());
+            if (orderForm != null && orderForm.getPayMethod() != null) {
+                payMethod = orderForm.getPayMethod();
+            } else {
+                payMethod = 1; 
             }
-            
-            model.addAttribute("categoryList", categoryRepository.findAll());
-            
-            model.addAttribute("errorMessage", "支払い方法を選択してください。"); 
-            return "client/order/payment_input"; 
         }
 
      // 選択された決済方法をセットする
-        OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
         if (orderForm != null) {
             orderForm.setPayMethod(payMethod);
         }
