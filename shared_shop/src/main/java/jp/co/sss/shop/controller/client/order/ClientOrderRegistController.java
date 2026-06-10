@@ -112,11 +112,28 @@ public class ClientOrderRegistController {
     
     // 選択された支払い方法を保存。最新の在庫状況から小計・合計金額を算出し、注文確認画面を表示。
     @PostMapping("/client/order/check")
-    public String showOrderConfirm(@RequestParam(name = "payMethod") int payMethod, HttpSession session, Model model) {
+    public String showOrderConfirm(
+            @RequestParam(name = "payMethod", required = false) Integer payMethod, 
+            HttpSession session, Model model) {
 
         UserBean user = (UserBean) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
+        }
+        
+        if (payMethod == null) {
+        	
+            OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
+            
+            model.addAttribute("orderForm", orderForm);
+            if (orderForm != null) {
+                model.addAttribute("payMethod", orderForm.getPayMethod());
+            }
+            
+            model.addAttribute("categoryList", categoryRepository.findAll());
+            
+            model.addAttribute("errorMessage", "支払い方法を選択してください。"); 
+            return "client/order/payment_input"; 
         }
 
         OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
