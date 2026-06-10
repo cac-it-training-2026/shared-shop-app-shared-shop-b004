@@ -228,6 +228,45 @@ public class ClientOrderRegistController {
 
         return "client/order/complete";
     }
+    
+    @GetMapping("/client/order/address/input")
+    public String showAddressFormByGet(HttpSession session, Model model) {
+    	
+        UserBean user = (UserBean) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
+
+        if (orderForm == null) {
+            orderForm = new OrderBean();
+            User dbUser = userRepository.findByIdAndDeleteFlag(user.getId(), 0); 
+            if (dbUser != null) {
+                orderForm.setPostalCode(dbUser.getPostalCode());
+                orderForm.setAddress(dbUser.getAddress());
+                orderForm.setName(dbUser.getName());
+                orderForm.setPhoneNumber(dbUser.getPhoneNumber()); 
+            }
+        }
+
+        model.addAttribute("orderForm", orderForm);
+        model.addAttribute("categoryList", categoryRepository.findAll());
+
+        return "client/order/address_input";
+    }
+
+    @PostMapping("/client/basket/list")
+    public String handleBasketListBack() {
+    	
+        return "redirect:/client/basket/list";
+    }
+
+    @PostMapping("/client/order/payment/back")
+    public String handlePaymentBackToAddressInput() {
+
+        return "redirect:/client/order/address/input";
+    }
 
 
 }
