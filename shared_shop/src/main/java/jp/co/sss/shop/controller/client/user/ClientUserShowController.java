@@ -18,7 +18,7 @@ public class ClientUserShowController {
 	@Autowired
 	UserRepository repository;
 
-	@RequestMapping(path = "/client/user/detail", method = RequestMethod.GET)
+	@RequestMapping(path = "/client/user/detail", method = { RequestMethod.GET, RequestMethod.POST })
 	public String userDetail(HttpSession session, Model model) {
 
 		UserBean loginUser = (UserBean) session.getAttribute("user");
