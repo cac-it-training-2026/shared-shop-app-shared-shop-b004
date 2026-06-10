@@ -1,6 +1,7 @@
 package jp.co.sss.shop.controller.client.basket;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,16 +133,22 @@ public class ClientBasketController {
         List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
         
         if (basket != null) {
-
-        	// 対象の商品をループで探す
-        	for (BasketBean bean : basket) {
+            Iterator<BasketBean> iterator = basket.iterator();
+            
+            // 対象の商品をループで探す
+            while (iterator.hasNext()) {
+                BasketBean bean = iterator.next();
                 if (bean.getId().equals(itemId)) {
-                	// 一致する商品をカートから削除
-                	basket.remove(bean); 
+                    // 数が2以上のとき：該当商品の数を減らす
+                    if (bean.getOrderNum() >= 2) {
+                        bean.setOrderNum(bean.getOrderNum() - 1);
+                    } else {
+                        iterator.remove(); // 数が1のとき:買い物かごから該当商品を削除
+                    }
                     break;              
                 }
             }
-        	// セッションを更新
+            // セッションを更新
             session.setAttribute("basketBeans", basket);
         }
 
