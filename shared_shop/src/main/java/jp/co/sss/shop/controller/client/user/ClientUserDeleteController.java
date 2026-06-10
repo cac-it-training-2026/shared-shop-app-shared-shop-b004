@@ -22,11 +22,14 @@ public class ClientUserDeleteController {
 	@Autowired
 	HttpSession session;
 
+	// 退会確認画面表示
 	@RequestMapping(path = "/client/user/delete/check", method = RequestMethod.POST)
 	public String userCheck() {
 
 		UserBean loginUser = (UserBean) session.getAttribute("user");
-		User user = repository.findByIdAndDeleteFlag(loginUser.getId(), Constant.NOT_DELETED);
+		User user = repository.findByIdAndDeleteFlag(
+				loginUser.getId(),
+				Constant.NOT_DELETED);
 
 		UserBean userForm = new UserBean();
 		BeanUtils.copyProperties(user, userForm);
@@ -36,6 +39,7 @@ public class ClientUserDeleteController {
 		return "redirect:/client/user/delete/check";
 	}
 
+	// 退会確認画面
 	@RequestMapping(path = "/client/user/delete/check", method = RequestMethod.GET)
 	public String userCheck2(Model model) {
 
@@ -44,6 +48,30 @@ public class ClientUserDeleteController {
 		model.addAttribute("userForm", userForm);
 
 		return "client/user/delete_check";
+	}
 
+	// 退会処理
+	@RequestMapping(path = "/client/user/delete/complete", method = RequestMethod.POST)
+	public String userComplete() {
+
+		UserBean userForm = (UserBean) session.getAttribute("userForm");
+
+		User user = repository.findById(userForm.getId()).get();
+
+		user.setDeleteFlag(Constant.DELETED);
+
+		repository.save(user);
+
+		session.removeAttribute("userForm");
+		session.invalidate();
+
+		return "redirect:/client/user/delete/complete";
+	}
+
+	// 退会完了画面
+	@RequestMapping(path = "/client/user/delete/complete", method = RequestMethod.GET)
+	public String userComplete2() {
+
+		return "client/user/delete_complete";
 	}
 }
