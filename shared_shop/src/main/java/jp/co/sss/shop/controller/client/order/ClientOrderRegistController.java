@@ -116,11 +116,13 @@ public class ClientOrderRegistController {
             @RequestParam(name = "payMethod", required = false) Integer payMethod, 
             HttpSession session, Model model) {
 
-        UserBean user = (UserBean) session.getAttribute("user");
+    	//ログインチェック
+    	UserBean user = (UserBean) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
         
+        // 支払方法選択チェック
         if (payMethod == null) {
         	
             OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
@@ -136,29 +138,36 @@ public class ClientOrderRegistController {
             return "client/order/payment_input"; 
         }
 
+     // 選択された決済方法をセットする
         OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
         if (orderForm != null) {
             orderForm.setPayMethod(payMethod);
         }
 
+     // 買い物かごの中身を取得する
         List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
         
+     // 合計金額の変数を初期化
         List<OrderItemBean> orderItemBeans = new ArrayList<>();
         int subtotal = 0;
 
+        //　在庫チェックとデータの詰め替え
         if (basket != null && !basket.isEmpty()) {
             for (int i = 0; i < basket.size(); i++) {
                 BasketBean currentBean = basket.get(i);
                 
+             // データベースから最新の商品情報を取得
                 Item dbItem = itemRepository.findByIdAndDeleteFlag(currentBean.getId(), 0);
                 
+             // 在庫切れチェック
                 if (dbItem == null || dbItem.getStock() == 0) {
                     basket.remove(i);
                     i--;
                     model.addAttribute("message", currentBean.getName() + "ただ今売れ切りました。");
                 } else {
                 	
-                    OrderItemBean orderItem = new OrderItemBean();
+                	// データの詰め替え
+                	OrderItemBean orderItem = new OrderItemBean();
                     
                     orderItem.setId(dbItem.getId());           
                     orderItem.setName(dbItem.getName());       
@@ -166,6 +175,7 @@ public class ClientOrderRegistController {
                     orderItem.setImage(dbItem.getImage());     
                     orderItem.setOrderNum(currentBean.getOrderNum()); 
                     
+                 //　計算してセット
                     int itemSubtotal = dbItem.getPrice() * currentBean.getOrderNum();
                     orderItem.setSubtotal(itemSubtotal);
                     
@@ -174,14 +184,17 @@ public class ClientOrderRegistController {
                     subtotal += itemSubtotal;
                 }
             }
+         // 変更された買い物かごの情報をセッションに再保存
             session.setAttribute("basketBeans", basket);
         }
 
+     // セッションに保存
         if (orderForm != null) {
             orderForm.setTotal(subtotal);
             session.setAttribute("orderForm", orderForm);
         }
 
+     // 画面でのレンダリングに必要なオブジェクトをモデルに追加
         model.addAttribute("orderItemBeans", orderItemBeans); 
         model.addAttribute("total", subtotal);               
         model.addAttribute("subtotal", subtotal);            
@@ -195,36 +208,45 @@ public class ClientOrderRegistController {
     @PostMapping("/client/order/complete")
     public String registerOrder(HttpSession session) {
 
-        UserBean user = (UserBean) session.getAttribute("user");
+    	//ログインチェック
+    	UserBean user = (UserBean) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
+     // 注文フォームと買い物かごの中身を取得
         OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
         List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
 
+     // 注文情報とカートがどちらも有効な場合、コミット処理（DB登録）を行う
         if (orderForm != null && basket != null && !basket.isEmpty()) {
             
-            for (BasketBean bean : basket) {
+        	// 在庫の減算処理
+        	for (BasketBean bean : basket) {
                 Item dbItem = itemRepository.findByIdAndDeleteFlag(bean.getId(), 0);
                 if (dbItem != null) {
+                	// 最新の在庫数から注文個数を差し引き、DBを更新する
                     dbItem.setStock(dbItem.getStock() - bean.getOrderNum());
                     itemRepository.save(dbItem); 
                 }
             }
 
-            Order newOrder = new Order();
+        	// 一時的なレコードから正式な注文エンティティへデータをコピー
+        	Order newOrder = new Order();
             newOrder.setPostalCode(orderForm.getPostalCode());
             newOrder.setAddress(orderForm.getAddress());
             newOrder.setName(orderForm.getName());
             newOrder.setPhoneNumber(orderForm.getPhoneNumber());
             newOrder.setPayMethod(orderForm.getPayMethod());
             
+         // 注文を行ったユーザー情報を紐付ける
             User dbUser = userRepository.findByIdAndDeleteFlag(user.getId(), 0);
             newOrder.setUser(dbUser);
             
+            // 注文情報をDBに保存
             orderRepository.save(newOrder);
 
+         // セッション情報のクリア
             session.removeAttribute("basketBeans");
             session.removeAttribute("orderForm");
         }
@@ -232,11 +254,12 @@ public class ClientOrderRegistController {
         return "redirect:/client/order/complete";
     }
 
-    //　注文完成画面
+    //注文完了画面を表示する
     @GetMapping("/client/order/complete")
     public String showOrderCompletePage(HttpSession session, Model model) {
         
-        UserBean user = (UserBean) session.getAttribute("user");
+    	//ログインチェック
+    	UserBean user = (UserBean) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
@@ -246,10 +269,12 @@ public class ClientOrderRegistController {
         return "client/order/complete";
     }
     
+    //　届け先入力画面を表示する
     @GetMapping("/client/order/address/input")
     public String showAddressFormByGet(HttpSession session, Model model) {
     	
-        UserBean user = (UserBean) session.getAttribute("user");
+    	//ログインチェック
+    	UserBean user = (UserBean) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
@@ -273,12 +298,14 @@ public class ClientOrderRegistController {
         return "client/order/address_input";
     }
 
+    //戻るボタン
     @PostMapping("/client/basket/list")
     public String handleBasketListBack() {
     	
         return "redirect:/client/basket/list";
     }
 
+    //戻るボタン
     @PostMapping("/client/order/payment/back")
     public String handlePaymentBackToAddressInput() {
 
