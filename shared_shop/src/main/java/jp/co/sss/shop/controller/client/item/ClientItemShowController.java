@@ -56,7 +56,7 @@ public class ClientItemShowController {
 	public String index(Model model) {
 
 		// 売れ筋順を初期値にする
-		//		int sortType = 2;
+		int sortType = 2;
 
 		// 注文情報DBから売れ筋順の商品一覧を取得
 		List<Item> itemList = orderItemRepository.findBestSellerItems();
@@ -68,9 +68,9 @@ public class ClientItemShowController {
 			itemList = itemRepository.findByDeleteFlagOrderByInsertDateDesc(Constant.NOT_DELETED);
 
 			//			// 新着商品がある場合だけ新着順に切り替える
-			//			if (itemList != null && !itemList.isEmpty()) {
-			//				sortType = 1;
-			//			}
+			if (itemList != null && !itemList.isEmpty()) {
+				sortType = 1;
+			}
 		}
 
 		//		// 最大10件表示
@@ -81,7 +81,7 @@ public class ClientItemShowController {
 		List<ItemBean> itemBeanList = beanTools.copyEntityListToItemBeanList(itemList);
 
 		model.addAttribute("items", itemBeanList);
-		//		model.addAttribute("sortType", sortType);
+		model.addAttribute("sortType", sortType);
 
 		return "index";
 	}
