@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -225,7 +226,7 @@ public class ClientOrderRegistController {
     
     // 注文情報と注文商品情報をデータベースに登録。商品の在庫数を減らし、買い物かごを空にする。
     @PostMapping("/client/order/complete")
-    public String registerOrder(HttpSession session) {
+    public String registerOrder(HttpSession session, RedirectAttributes redirectAttributes) {
 
     	//ログインチェック
     	UserBean user = (UserBean) session.getAttribute("user");
@@ -273,9 +274,15 @@ public class ClientOrderRegistController {
          // セッション情報のクリア
             session.removeAttribute("basketBeans");
             session.removeAttribute("orderForm");
+            
+            // 一時的なFlash Attributeを発送
+            redirectAttributes.addFlashAttribute("orderCompleteToken", true);
+            
+            return "redirect:/client/order/complete";
         }
 
-        return "redirect:/client/order/complete";
+        //買い物かごが空いている場合、完成画面に入らない、トップ画面に戻る
+        return "redirect:/";
     }
 
     //注文完了画面を表示する
@@ -286,6 +293,12 @@ public class ClientOrderRegistController {
     	UserBean user = (UserBean) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
+        }
+        
+        //一時的なFlash Attributeをチェック
+        if (!model.containsAttribute("orderCompleteToken")) {
+            // トップ画面に戻る、悪意のリフレッシュとURL訪問を防止
+            return "redirect:/";
         }
 
         model.addAttribute("categoryList", categoryRepository.findAll());
