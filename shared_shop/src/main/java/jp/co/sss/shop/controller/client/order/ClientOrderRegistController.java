@@ -21,9 +21,11 @@ import jp.co.sss.shop.bean.OrderItemBean;
 import jp.co.sss.shop.bean.UserBean;
 import jp.co.sss.shop.entity.Item;
 import jp.co.sss.shop.entity.Order;
+import jp.co.sss.shop.entity.OrderItem;
 import jp.co.sss.shop.entity.User;
 import jp.co.sss.shop.repository.CategoryRepository;
 import jp.co.sss.shop.repository.ItemRepository;
+import jp.co.sss.shop.repository.OrderItemRepository;
 import jp.co.sss.shop.repository.OrderRepository;
 import jp.co.sss.shop.repository.UserRepository;
 
@@ -41,6 +43,9 @@ public class ClientOrderRegistController {
     
     @Autowired
     private CategoryRepository categoryRepository;
+    
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
 
     //会員情報を取得し、届け先入力欄の初期値として設定して画面を表示。
@@ -234,44 +239,54 @@ public class ClientOrderRegistController {
             return "redirect:/login";
         }
 
-     // 注文フォームと買い物かごの中身を取得
+        // 注文フォームと買い物かごの中身を取得
         OrderBean orderForm = (OrderBean) session.getAttribute("orderForm");
         List<BasketBean> basket = (List<BasketBean>) session.getAttribute("basketBeans");
 
-     // 注文情報とカートがどちらも有効な場合、コミット処理（DB登録）を行う
+        // 注文情報とカートがどちらも有効な場合、DB登録を行う
         if (orderForm != null && basket != null && !basket.isEmpty()) {
             
-        	// 在庫の減算処理
-        	for (BasketBean bean : basket) {
-                Item dbItem = itemRepository.findByIdAndDeleteFlag(bean.getId(), 0);
-                if (dbItem != null) {
-                	
-                	// データベースでの在庫もう一度確認
-                	if (dbItem.getStock() <= 0) {
-                	    continue;
-                	}
-                	// 最新の在庫数から注文個数を差し引き、DBを更新する
-                    dbItem.setStock(dbItem.getStock() - bean.getOrderNum());
-                    itemRepository.save(dbItem); 
-                }
-            }
-
-        	// 一時的なレコードから正式な注文エンティティへデータをコピー
-        	Order newOrder = new Order();
+            // 一時的なレコードから正式な注文エンティティへデータをコピー
+            Order newOrder = new Order();
             newOrder.setPostalCode(orderForm.getPostalCode());
             newOrder.setAddress(orderForm.getAddress());
             newOrder.setName(orderForm.getName());
             newOrder.setPhoneNumber(orderForm.getPhoneNumber());
             newOrder.setPayMethod(orderForm.getPayMethod());
             
-         // 注文を行ったユーザー情報を紐付ける
+            // 注文を行ったユーザー情報を紐付ける
             User dbUser = userRepository.findByIdAndDeleteFlag(user.getId(), 0);
             newOrder.setUser(dbUser);
             
-            // 注文情報をDBに保存
-            orderRepository.save(newOrder);
+            // 先に注文主表を保存して、自動採番された注文IDを取得する
+            newOrder = orderRepository.save(newOrder);
 
-         // セッション情報のクリア
+            // 在庫の減算処理、注文商品明细の保存
+            for (BasketBean bean : basket) {
+                Item dbItem = itemRepository.findByIdAndDeleteFlag(bean.getId(), 0);
+                if (dbItem != null) {
+                	
+                    // データベースでの在庫もう一度確認
+                    if (dbItem.getStock() <= 0) {
+                        continue;
+                    }
+                    // 最新の在庫数から注文個数を差し引き、DBを更新する
+                    dbItem.setStock(dbItem.getStock() - bean.getOrderNum());
+                    itemRepository.save(dbItem); 
+
+                    // 注文情報をデータベースに保存
+                    OrderItem orderItem = new OrderItem();
+                    
+                    orderItem.setOrder(newOrder);             
+                    orderItem.setItem(dbItem);                
+                    orderItem.setQuantity(bean.getOrderNum()); 
+                    orderItem.setPrice(dbItem.getPrice()); 
+                    
+                    orderItemRepository.save(orderItem);
+                }
+            }
+
+            // セッション情報のクリア
             session.removeAttribute("basketBeans");
             session.removeAttribute("orderForm");
             
