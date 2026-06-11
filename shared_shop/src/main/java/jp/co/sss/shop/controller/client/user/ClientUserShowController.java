@@ -18,18 +18,25 @@ public class ClientUserShowController {
 	@Autowired
 	UserRepository repository;
 
+	// 会員詳細画面表示
+	/**
+	 * @param session
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(path = "/client/user/detail", method = { RequestMethod.GET, RequestMethod.POST })
 	public String userDetail(HttpSession session, Model model) {
-
+		//セッションからログイン中の会員情報を取得
 		UserBean loginUser = (UserBean) session.getAttribute("user");
-
+		//DBから最新の会員情報を取得
 		User user = repository.getReferenceById(loginUser.getId());
-
+		//画面表示用Beanへコピー
 		UserBean userBean = new UserBean();
+
 		BeanUtils.copyProperties(user, userBean);
-
+		//リクエストスコープへ登録
 		model.addAttribute("userBean", userBean);
-
+		//会員詳細画面へ遷移
 		return "client/user/detail";
 	}
 }
