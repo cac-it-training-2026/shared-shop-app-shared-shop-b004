@@ -142,6 +142,9 @@ public class ClientOrderRegistController {
         
      // 合計金額の変数を初期化
         List<OrderItemBean> orderItemBeans = new ArrayList<>();
+        List<String> itemNameListZero = new ArrayList<>();        // ${itemNameListZero} に対応
+        List<String> itemNameListLessThan = new ArrayList<>();    // ${itemNameListLessThan}　に対応
+        
         int subtotal = 0;
 
         //　在庫チェックとデータの詰め替え
@@ -154,9 +157,7 @@ public class ClientOrderRegistController {
                 
              // 在庫切れチェック
                 if (dbItem == null || dbItem.getStock() == 0) {
-                    basket.remove(i);
-                    i--;
-                    model.addAttribute("message", currentBean.getName() + "ただ今売れ切りました。");
+                	itemNameListZero.add(currentBean.getName());
                 } else {
                 	
                 	// データの詰め替え
@@ -166,7 +167,17 @@ public class ClientOrderRegistController {
                     orderItem.setName(dbItem.getName());       
                     orderItem.setPrice(dbItem.getPrice());     
                     orderItem.setImage(dbItem.getImage());     
-                    orderItem.setOrderNum(currentBean.getOrderNum()); 
+
+                 // 注文数が在庫数より多い場合に表示する
+                    if (dbItem.getStock() < currentBean.getOrderNum()) {
+                        itemNameListLessThan.add(currentBean.getName());
+                        // 注文数を在庫数に変更する
+                        currentBean.setOrderNum(dbItem.getStock());
+                    }
+                    
+                    //  注文可能数を設定
+                    orderItem.setOrderNum(currentBean.getOrderNum());
+                    
                     
                  //　計算してセット
                     int itemSubtotal = dbItem.getPrice() * currentBean.getOrderNum();
@@ -180,19 +191,34 @@ public class ClientOrderRegistController {
          // 変更された買い物かごの情報をセッションに再保存
             session.setAttribute("basketBeans", basket);
         }
-
-     // セッションに保存
-        if (orderForm != null) {
-            orderForm.setTotal(subtotal);
-            session.setAttribute("orderForm", orderForm);
+        
+        // 注文可能かどうかのチェック
+        if (orderItemBeans.isEmpty()) {
+            // 注文時点で注文対象商品の在庫がすべて0の場合
+            model.addAttribute("orderItemBeans", null);
+        } else {
+            // 正常ルート
+            model.addAttribute("orderItemBeans", orderItemBeans); 
+            model.addAttribute("total", subtotal);               
+            model.addAttribute("subtotal", subtotal);            
+            
+            if (orderForm != null) {
+                orderForm.setTotal(subtotal);
+                session.setAttribute("orderForm", orderForm);
+            }
         }
 
-     // 画面でのレンダリングに必要なオブジェクトをモデルに追加
-        model.addAttribute("orderItemBeans", orderItemBeans); 
-        model.addAttribute("total", subtotal);               
-        model.addAttribute("subtotal", subtotal);            
+        // エラー商品がある場合
+        if (!itemNameListZero.isEmpty()) {
+            model.addAttribute("itemNameListZero", itemNameListZero);
+        }
+        if (!itemNameListLessThan.isEmpty()) {
+            model.addAttribute("itemNameListLessThan", itemNameListLessThan);
+        }
+
         model.addAttribute("categoryList", categoryRepository.findAll());
         model.addAttribute("orderForm", orderForm);
+        model.addAttribute("payMethod", payMethod);
 
         return "client/order/check";
     }
