@@ -244,6 +244,11 @@ public class ClientOrderRegistController {
         	for (BasketBean bean : basket) {
                 Item dbItem = itemRepository.findByIdAndDeleteFlag(bean.getId(), 0);
                 if (dbItem != null) {
+                	
+                	// データベースでの在庫もう一度確認
+                	if (dbItem.getStock() <= 0) {
+                	    continue;
+                	}
                 	// 最新の在庫数から注文個数を差し引き、DBを更新する
                     dbItem.setStock(dbItem.getStock() - bean.getOrderNum());
                     itemRepository.save(dbItem); 
