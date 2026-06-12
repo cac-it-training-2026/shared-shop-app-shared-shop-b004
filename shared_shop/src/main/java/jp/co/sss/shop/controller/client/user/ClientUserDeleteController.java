@@ -32,6 +32,11 @@ public class ClientUserDeleteController {
 		//セッションからログイン中の会員情報を取得
 		UserBean loginUser = (UserBean) session.getAttribute("user");
 
+		//セッション切れなどにより会員情報が取得できない場合はログイン画面へ遷移
+		if (loginUser == null) {
+			return "redirect:/login";
+		}
+
 		//DBから未削除の会員情報を取得
 		User user = repository.findByIdAndDeleteFlag(
 				loginUser.getId(),
@@ -59,6 +64,11 @@ public class ClientUserDeleteController {
 		//セッションから会員情報を取得
 		UserBean userForm = (UserBean) session.getAttribute("userForm");
 
+		//セッション切れなどにより会員情報が取得できない場合はログイン画面へ遷移
+		if (userForm == null) {
+			return "redirect:/login";
+		}
+
 		//リクエストスコープへ登録
 		model.addAttribute("userForm", userForm);
 
@@ -75,6 +85,11 @@ public class ClientUserDeleteController {
 
 		//セッションから会員情報を取得
 		UserBean userForm = (UserBean) session.getAttribute("userForm");
+
+		//セッション切れなどにより会員情報が取得できない場合はログイン画面へ遷移
+		if (userForm == null) {
+			return "redirect:/login";
+		}
 
 		//DBから対象会員情報を取得
 		User user = repository.findById(userForm.getId()).get();

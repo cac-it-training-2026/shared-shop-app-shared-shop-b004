@@ -28,6 +28,12 @@ public class ClientUserShowController {
 	public String userDetail(HttpSession session, Model model) {
 		//セッションからログイン中の会員情報を取得
 		UserBean loginUser = (UserBean) session.getAttribute("user");
+
+		// セッション切れなどにより会員情報が取得できない場合はログイン画面へ遷移
+		if (loginUser == null) {
+			return "redirect:/login";
+		}
+
 		//DBから最新の会員情報を取得
 		User user = repository.getReferenceById(loginUser.getId());
 		//画面表示用Beanへコピー
