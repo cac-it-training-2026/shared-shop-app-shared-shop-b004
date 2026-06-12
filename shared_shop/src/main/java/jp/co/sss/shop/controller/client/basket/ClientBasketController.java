@@ -108,27 +108,30 @@ public class ClientBasketController {
      // 追加する商品の情報を取得
         Item item = itemRepository.findById(itemId).get();
 
-     // 重複チェック：同じ商品がすでにカートにあるか
-        boolean isExist = false;
+     // 重複チェックと順番調整
+        BasketBean existBean = null;
         for (BasketBean bean : basket) {
             if (bean.getId() == itemId) {
-
-            	// すでにある場合は数量を+1
-            	bean.setOrderNum(bean.getOrderNum() + 1);
-                isExist = true;
+                existBean = bean;
                 break;
             }
         }
 
-     // 新しい商品の場合、カートに追加
-        if (!isExist) {
+        if (existBean != null) {
+            // すでに買い物かごにある場合＋1、最も上に置く
+            existBean.setOrderNum(existBean.getOrderNum() + 1);
+            basket.remove(existBean);
+            basket.add(0, existBean);
+        } else {
+            // 新しい商品の場合、カートに追加
             BasketBean newBean = new BasketBean();
             newBean.setId(item.getId());
             newBean.setName(item.getName());
             newBean.setStock(item.getStock());
             newBean.setOrderNum(1); // 初期数量は1
             
-            basket.add(newBean);
+            // 最も上に置く
+            basket.add(0, newBean);
         }
 
      // セッションを更新し、カート画面へリダイレクト
