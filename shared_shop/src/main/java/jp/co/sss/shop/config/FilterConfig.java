@@ -2,6 +2,7 @@ package jp.co.sss.shop.config;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import jp.co.sss.shop.filter.AdminAccountCheckFilter;
 import jp.co.sss.shop.filter.CategoryListMakeFilter;
@@ -16,7 +17,7 @@ import jp.co.sss.shop.filter.SystemAdminAccountCheckFilter;
  */
 
 //TODO 開発中はフィルター制限を防ぐため無効化する
-//@Configuration
+@Configuration
 public class FilterConfig {
 	/**
 	 * 非会員向けアクセス制限用フィルタの設定

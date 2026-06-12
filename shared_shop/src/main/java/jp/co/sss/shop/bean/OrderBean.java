@@ -1,5 +1,9 @@
 package jp.co.sss.shop.bean;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 /**
  * 注文情報クラス
  *
@@ -30,21 +34,29 @@ public class OrderBean {
 	/**
 	 * お届け先郵便番号
 	 */
+	@NotBlank(message = "郵便番号は必須項目です。")
+    @Pattern(regexp = "^\\d{7}$", message = "郵便番号は7文字の半角数字で入力してください。")
 	private String postalCode;
 
 	/**
 	 * お届け先住所
 	 */
+	@NotBlank(message = "住所は必須項目です。")
+    @Size(max = 150, message = "住所は最大150文字以内で入力してください。")
 	private String address;
 
 	/**
 	 * お届け先宛名
 	 */
+	@NotBlank(message = "氏名は必須項目です。")
+    @Size(max = 30, message = "氏名は最大30文字以内で入力してください。")
 	private String name;
 
 	/**
 	 * お届け先電話番号
 	 */
+	@NotBlank(message = "電話番号は必須項目です。")
+    @Pattern(regexp = "^\\d{10,11}$", message = "電話番号は10文字～11文字の半角数字で入力してください。")
 	private String phoneNumber;
 
 	/**
