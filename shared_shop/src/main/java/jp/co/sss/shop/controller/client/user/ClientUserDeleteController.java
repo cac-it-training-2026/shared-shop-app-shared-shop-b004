@@ -86,10 +86,10 @@ public class ClientUserDeleteController {
 		repository.save(user);
 
 		//買い物かご情報を削除
-		session.removeAttribute("basketBeans");
+		//session.removeAttribute("basketBeans");
 
 		//セッション内の会員情報を削除
-		session.removeAttribute("userForm");
+		//session.removeAttribute("userForm");
 
 		//セッションを破棄し未ログイン状態にする
 		session.invalidate();
