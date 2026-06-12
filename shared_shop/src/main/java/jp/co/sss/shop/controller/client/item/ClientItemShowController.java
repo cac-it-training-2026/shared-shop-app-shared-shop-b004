@@ -74,9 +74,9 @@ public class ClientItemShowController {
 		}
 
 		//		// 最大10件表示
-		//		if (itemList != null && itemList.size() > 10) {
-		//			itemList = itemList.subList(0, 10);
-		//		}
+		if (itemList != null && itemList.size() > 10) {
+			itemList = itemList.subList(0, 10);
+		}
 
 		List<ItemBean> itemBeanList = beanTools.copyEntityListToItemBeanList(itemList);
 
@@ -203,7 +203,6 @@ public class ClientItemShowController {
 		// Itemエンティティの各フィールドの値をItemBeanにコピー
 		ItemBean itemBean = beanTools.copyEntityToItemBean(item);
 
-		// 商品情報をViewへ渡す
 		model.addAttribute("item", itemBean);
 
 		return "client/item/detail";
