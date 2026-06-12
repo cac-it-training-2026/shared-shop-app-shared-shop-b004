@@ -34,6 +34,9 @@ public class ClientUserShowController {
 			return "redirect:/login";
 		}
 
+		//セッションスコープの入力フォーム情報を削除
+		session.removeAttribute("updateUserForm");
+
 		//DBから最新の会員情報を取得
 		User user = repository.getReferenceById(loginUser.getId());
 		//画面表示用Beanへコピー

@@ -27,14 +27,18 @@ public class ClientUserUpdateController {
 	 */
 	@RequestMapping(path = "/client/user/update/input", method = RequestMethod.POST)
 	public String inputUpdatePost(HttpSession session) {
+
+		//セッション切れの場合にログイン画面にリダイレクト
+		UserBean loginUser = (UserBean) session.getAttribute("user");
+		if (loginUser == null) {
+			return "redirect:/login";
+		}
+
 		//セッションスコープに入力フォーム情報があるか確認
 		UserForm userForm = (UserForm) session.getAttribute("updateUserForm");
 
 		//セッションにデータがない場合DBから取得
 		if (userForm == null) {
-
-			//ログイン中のユーザーIDをセッションスコープから取得
-			UserBean loginUser = (UserBean) session.getAttribute("user");
 
 			//一般会員変更はセッションに保存されたIDを使用し、変更対象のデータをDBから取得
 			User user = userRepository.getReferenceById(loginUser.getId());
@@ -64,13 +68,32 @@ public class ClientUserUpdateController {
 	 */
 	@RequestMapping(path = "/client/user/update/input", method = RequestMethod.GET)
 	public String inputUpdateGet(Model model, HttpSession session) {
-		//セッションスコープから入力フォーム情報を取得
+
+		// セッション切れの場合にログイン画面にリダイレクト
+		UserBean loginUser = (UserBean) session.getAttribute("user");
+		if (loginUser == null) {
+			return "redirect:/login";
+		}
+
+		// セッションスコープから入力フォーム情報を取得
 		UserForm userForm = (UserForm) session.getAttribute("updateUserForm");
 
-		//入力フォーム情報をリクエストスコープに設定
+		// 入力フォーム情報をリクエストスコープに設定
 		model.addAttribute("userForm", userForm);
 
-		//変更入力画面表示
+		// バリデーションエラー情報がある場合は画面へ引き継ぐ
+		Object errors = session.getAttribute("errors");
+
+		if (errors != null) {
+			model.addAttribute(
+					"org.springframework.validation.BindingResult.userForm",
+					errors);
+
+			// エラー情報を削除
+			session.removeAttribute("errors");
+		}
+
+		// 変更入力画面表示
 		return "client/user/update_input";
 	}
 
@@ -82,13 +105,21 @@ public class ClientUserUpdateController {
 	 */
 	@RequestMapping(path = "/client/user/update/check", method = RequestMethod.POST)
 	public String checkUpdatePost(@Valid @ModelAttribute UserForm userForm, BindingResult result, HttpSession session) {
-		//入力エラーがある場合の処理
-		if (result.hasErrors()) {
-			return "client/user/update_input";
+
+		//セッション切れの場合にログイン画面にリダイレクト
+		UserBean loginUser = (UserBean) session.getAttribute("user");
+		if (loginUser == null) {
+			return "redirect:/login";
 		}
 
 		//画面から入力された入力フォームをセッションスコープに入力フォーム情報として保存
 		session.setAttribute("updateUserForm", userForm);
+
+		//入力エラーがある場合の処理
+		if (result.hasErrors()) {
+			session.setAttribute("errors", result);
+			return "redirect:/client/user/update/input";
+		}
 
 		//変更確認画面表示処理にリダイレクト
 		return "redirect:/client/user/update/check";
@@ -101,6 +132,13 @@ public class ClientUserUpdateController {
 	 */
 	@RequestMapping(path = "/client/user/update/check", method = RequestMethod.GET)
 	public String checkUpdateGet(Model model, HttpSession session) {
+
+		//セッション切れの場合にログイン画面にリダイレクト
+		UserBean loginUser = (UserBean) session.getAttribute("user");
+		if (loginUser == null) {
+			return "redirect:/login";
+		}
+
 		//セッションスコープから入力フォーム情報を取得
 		UserForm userForm = (UserForm) session.getAttribute("updateUserForm");
 
@@ -122,6 +160,13 @@ public class ClientUserUpdateController {
 	 */
 	@RequestMapping(path = "/client/user/update/complete", method = RequestMethod.POST)
 	public String completeUpdatePost(HttpSession session) {
+
+		//セッション切れの場合にログイン画面にリダイレクト
+		UserBean loginUser = (UserBean) session.getAttribute("user");
+		if (loginUser == null) {
+			return "redirect:/login";
+		}
+
 		//セッションスコープから入力フォーム情報を取得
 		UserForm userForm = (UserForm) session.getAttribute("updateUserForm");
 		if (userForm == null) {
@@ -130,7 +175,6 @@ public class ClientUserUpdateController {
 
 		//入力フォーム情報を元にDB登録用エンティティオブジェクトを生成（取得して上書き）
 		User user = userRepository.getReferenceById(userForm.getId());
-		user.getName();
 		user.setEmail(userForm.getEmail());
 		user.setPassword(userForm.getPassword());
 		user.setName(userForm.getName());
@@ -145,13 +189,10 @@ public class ClientUserUpdateController {
 		session.removeAttribute("updateUserForm");
 
 		//セッションスコープの会員情報を更新
-		UserBean loginUser = (UserBean) session.getAttribute("user");
-		if (loginUser != null) {
-			//最新の情報をコピー
-			BeanUtils.copyProperties(user, loginUser);
-			// セッションスコープを最新情報で上書き
-			session.setAttribute("user", loginUser);
-		}
+		//最新の情報をコピー
+		BeanUtils.copyProperties(user, loginUser);
+		// セッションスコープを最新情報で上書き
+		session.setAttribute("user", loginUser);
 
 		//変更完了画面表示処理にリダイレクト
 		return "redirect:/client/user/update/complete";
@@ -162,7 +203,14 @@ public class ClientUserUpdateController {
 	 * @return
 	 */
 	@RequestMapping(path = "/client/user/update/complete", method = RequestMethod.GET)
-	public String completeUpdateGet() {
+	public String completeUpdateGet(HttpSession session) {
+
+		//セッション切れの場合にログイン画面にリダイレクト
+		UserBean loginUser = (UserBean) session.getAttribute("user");
+		if (loginUser == null) {
+			return "redirect:/login";
+		}
+
 		// ・登録完了画面表示
 		return "client/user/update_complete";
 	}
