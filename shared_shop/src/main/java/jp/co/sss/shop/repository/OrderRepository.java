@@ -32,4 +32,9 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 	 */
 	List<Order> findByUserIdOrderByInsertDateDesc(Integer userId);
 
+	/*
+	 * 指定したユーザーの注文情報を注文id,ユーザー情報で絞込検索
+	 */
+	Order findByIdAndUserId(Integer id, Integer userId);
+
 }

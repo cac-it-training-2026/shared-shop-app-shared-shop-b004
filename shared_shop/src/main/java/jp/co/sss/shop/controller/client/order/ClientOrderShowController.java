@@ -39,6 +39,10 @@ public class ClientOrderShowController {
 	public String showOrderList(HttpSession session, Model model) {
 		//セッションに登録されたユーザー情報取得
 		UserBean user = (UserBean) session.getAttribute("user");
+		//		System.out.println("user" + user);
+		if (user == null) {
+			return "redirect:/login";
+		}
 		//ユーザーの注文情報を取得
 		List<Order> orderList = repository.findByUserIdOrderByInsertDateDesc(user.getId());
 		//OrderBeanクラスの配列を作成
@@ -66,8 +70,17 @@ public class ClientOrderShowController {
 	 * 注文情報の詳細表示
 	 */
 	@GetMapping("/client/order/detail/{id}")
-	public String showOrder(@PathVariable Integer id, Model model) {
-		Order order = repository.findById(id).orElseThrow();
+	public String showOrder(@PathVariable Integer id, HttpSession session, Model model) {
+		//		セッションでユーザーがログイン状態かチェック		
+		UserBean user = (UserBean) session.getAttribute("user");
+		System.out.println("user" + user);
+		if (user == null) {
+			return "redirect:/login";
+		}
+		Order order = repository.findByIdAndUserId(id, user.getId());
+		if (order == null) {
+			return "redirect:/client/order/list";
+		}
 
 		// 表示する注文情報を生成
 		OrderBean orderBean = beanTools.copyEntityToOrderBean(order);
