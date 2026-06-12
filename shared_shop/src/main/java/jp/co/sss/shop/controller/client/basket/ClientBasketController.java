@@ -66,6 +66,8 @@ public class ClientBasketController {
                     //チェック：在庫数＜買い物かごの個数となる場合
                     else if (dbItem.getStock() < currentBean.getOrderNum()) {
                         itemNameListLessThan.add(currentBean.getName());
+                        // 在庫数が買い物かごの数量を下回る
+                        currentBean.setOrderNum(dbItem.getStock());
                     }
                 }
             }
